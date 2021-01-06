@@ -1,4 +1,4 @@
-const Users = require('./access_token');
+const Users = require('../models/access_token');
 module.exports.auth = async (req, res, next) => {
     try {
         const token = req.headers.token

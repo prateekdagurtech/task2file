@@ -14,8 +14,8 @@ const usersSchema = new Schema({
         unique: true,
     },
 
-    expiry: {
-        type: String,
+    expires_in: {
+        type: Number,
     }
 
 })

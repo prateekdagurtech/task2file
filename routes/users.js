@@ -1,11 +1,11 @@
 const express = require('express')
 const Users = require('../models/user')
 const UsersAuth = require('../models/access_token')
-const UsersAddress = require('../models/address')
+//const UsersAddress = require('../models/address')
 const userAuthentication = require('../middleware/auth')
 const randtoken = require('rand-token')
 const bcrypt = require('bcrypt');
-//const { Router } = require('express')
+
 const saltRounds = 10;
 const router = new express.Router()
 
@@ -24,20 +24,20 @@ router.post('/user/register', async (req, res) => {
     }
 });
 
-router.post('/user/address', async (req, res) => {
-    try {
-        const user = await UsersAuth.findOne({ access_token })
-        const users = new UsersAddress({
-            user_id: user.user_id
-        });
-        console.log(users)
-        let data = await users.save()
-        res.send(data);
-    }
-    catch (err) {
-        res.status(500).send(err);
-    }
-});
+// router.post('/user/address', async (req, res) => {
+//     try {
+//         const user = await UsersAuth.findOne({ access_token })
+//         const users = new UsersAddress({
+//             user_id: user.user_id
+//         });
+//         console.log(users)
+//         let data = await users.save()
+//         res.send(data);
+//     }
+//     catch (err) {
+//         res.status(500).send(err);
+//     }
+// });
 router.post('/user/login', async (req, res) => {
     try {
         const user = await findByCredentials(req.body.username, req.body.password)
@@ -45,7 +45,7 @@ router.post('/user/login', async (req, res) => {
         const users = new UsersAuth({
             user_id: user._id,
             access_token: access_token,
-            expires_in: 3000
+
         });
         let data = await users.save();
         res.send(data)
@@ -68,16 +68,18 @@ findByCredentials = async (username, password) => {
 }
 
 router.get('/users/get/', userAuthentication.auth, async (req, res) => {
-    try {
-        const token = req.headers.token
-        const user = await UsersAuth.findOne({ "access_token": token })
-        res.send(user)
-    } catch (e) {
-        console.log(e)
-        res.status(401).send(e.message)
-    }
-});
+    res.send(req.user)
 
+    // try {
+    //     const token = req.headers.token
+    //     const user = await UsersAuth.findOne({ "access_token": token })
+    //     res.send(user)
+
+    // } catch (e) {
+    //     console.log(e)
+    //     res.status(401).send(e.message)
+    // }
+});
 
 router.put('/user/delete', userAuthentication.auth, async (req, res) => {
     try {

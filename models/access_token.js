@@ -14,11 +14,13 @@ const usersSchema = new Schema({
         unique: true,
     },
 
-    expires_in: {
-        type: Number,
-    }
-
+    expiry_in: {
+        type: Date,
+        expires: '50s',
+        default: Date.now()
+    },
 })
+
 
 const access_token = mongoose.model('access_token', usersSchema)
 module.exports = access_token 

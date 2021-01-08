@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose;
-
 const usersSchema = new Schema({
     firstname: {
         type: String
@@ -19,20 +18,16 @@ const usersSchema = new Schema({
         required: true,
         unique: true,
     },
-    password: {
+    hash: {
         type: String,
         required: true,
         bcrypt: true,
     },
-
     salt: {
         type: String,
         required: true,
         bcrypt: true,
     },
-
 })
-
 const Usersdata = mongoose.model('users', usersSchema);
-
 module.exports = Usersdata

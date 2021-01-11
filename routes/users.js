@@ -1,12 +1,12 @@
+const jwt = require('jsonwebtoken')
 const express = require('express')
 const UsersModel = require('../models/user')
 const UsersAccessToken = require('../models/access_token')
 const UsersAddress = require('../models/address')
 const userAuthentication = require('../middleware/auth')
-const randtoken = require('rand-token')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const router = new express.Router()
+const router = express.Router()
 router.post('/register', async (req, res) => {
     try {
         const salt = bcrypt.genSaltSync(saltRounds);
@@ -42,10 +42,10 @@ router.post('/address', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const user = await findByCredentials(req.body.username, req.body.hash)
-        const access_token = randtoken.generate(16)
+        var token = jwt.sign({ id: user._id }, 'thisisprateek', { expiresIn: '1h' });
         const users = new UsersAccessToken({
             user_id: user._id,
-            access_token: access_token,
+            access_token: token,
         });
         let data = await users.save();
         res.send(data)
@@ -78,6 +78,9 @@ router.get('/get/:_id', async (req, res) => {
         res.status(401).send(e.message)
     }
 });
+// router.get('/get/my', userAuthentication, async (req, res) => {
+//     res.send(req.user)
+//})
 router.put('/delete', userAuthentication.auth, async (req, res) => {
     try {
         const user_id = req.user.user_id
@@ -97,5 +100,6 @@ router.get('/get', async function (req, res) {
     users = await UsersModel.find().limit(pagination.limit).skip(pagination.skip)
     res.send(users)
 });
+
 
 module.exports = router

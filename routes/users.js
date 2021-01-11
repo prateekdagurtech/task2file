@@ -1,9 +1,11 @@
+//const passport = require('passport')
 const jwt = require('jsonwebtoken')
 const express = require('express')
 const UsersModel = require('../models/user')
 const UsersAccessToken = require('../models/access_token')
 const UsersAddress = require('../models/address')
 const userAuthentication = require('../middleware/auth')
+const Secret_Token = process.env.SECRET_TOKEN
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const router = express.Router()
@@ -39,10 +41,24 @@ router.post('/address', async (req, res) => {
         res.status(500).send(err);
     }
 });
+// router.post('/login', passport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' }), async (req, res) => {
+//     try {
+//         const user = await findByCredentials(req.body.username, req.body.hash)
+//         var token = jwt.sign({ id: user._id }, 'thisisprateek', { expiresIn: '1h' });
+//         const users = new UsersAccessToken({
+//             user_id: user._id,
+//             access_token: token,
+//         });
+//         let data = await users.save();
+//         res.send(data)
+//     } catch (e) {
+//         res.status(400).send(e.message)
+//     }
+// })
 router.post('/login', async (req, res) => {
     try {
         const user = await findByCredentials(req.body.username, req.body.hash)
-        var token = jwt.sign({ id: user._id }, 'thisisprateek', { expiresIn: '1h' });
+        var token = jwt.sign({ id: user._id }, Secret_Token, { expiresIn: '1h' });
         const users = new UsersAccessToken({
             user_id: user._id,
             access_token: token,

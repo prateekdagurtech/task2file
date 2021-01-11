@@ -7,7 +7,7 @@ const randtoken = require('rand-token')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const router = new express.Router()
-router.post('/user/register', async (req, res) => {
+router.post('/register', async (req, res) => {
     try {
         const salt = bcrypt.genSaltSync(saltRounds);
         const hash = bcrypt.hashSync(req.body.hash, salt);
@@ -28,6 +28,11 @@ router.post('/address', async (req, res) => {
         req.body.user_id = user.user_id
         const users = new UsersAddress(req.body)
         let data = await users.save()
+        let updateUser = await UsersModel.updateOne({ _id: req.body.user_id }, {
+            $push: {
+                address: data._id
+            }
+        })
         res.send(data);
     }
     catch (err) {
@@ -60,14 +65,24 @@ findByCredentials = async (username, hash) => {
     }
     return user
 }
-router.get('/get/', userAuthentication.auth, async (req, res) => {
-    res.send(req.user)
+router.get('/get/:_id', async (req, res) => {
+    try {
+        const user_id = req.params._id
+        const user = await UsersModel.findOne({ "_id": user_id }).populate({ path: 'address' })
+        if (!user) {
+            res.json({ message: 'invalid user' })
+        }
+        res.send(user)
+
+    } catch (e) {
+        res.status(401).send(e.message)
+    }
 });
 router.put('/delete', userAuthentication.auth, async (req, res) => {
     try {
-        token = req.headers.token
-        const deleteUser = await UsersAccessToken.findOneAndDelete({ "access_token": token })
-        res.json({ message: 'successully deleted' })
+        const user_id = req.user.user_id
+        const deleteUser = await UsersModel.findOneAndDelete({ "_id": user_id })
+        res.json({ message: 'user deleted' })
     } catch (e) {
         res.status(401).send(e.message)
     }

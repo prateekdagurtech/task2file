@@ -1,12 +1,13 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose;
-const usersSchema = new Schema({
+const addressSchema = new Schema({
     user_id: {
-        type: String,
-        required: true,
+        type: Schema.Types.ObjectId,
+        ref: 'users'
     },
     address: {
-        type: String
+        type: String,
+        required: true,
     },
     city: {
         type: String
@@ -21,5 +22,5 @@ const usersSchema = new Schema({
         type: Number
     },
 })
-const address = mongoose.model('address', usersSchema)
+const address = mongoose.model('address', addressSchema)
 module.exports = address 

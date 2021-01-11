@@ -7,6 +7,6 @@ let app = express()
 const port = process.env.PORT || 3000
 
 app.use(express.json());
-app.use('/users', userRouters)
+app.use('/user', userRouters)
 app.listen(port, () => console.log(`Express server currently running on port ${port}`));
 

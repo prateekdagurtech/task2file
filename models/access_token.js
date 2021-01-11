@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose;
-const usersSchema = new Schema({
+const tokenSchema = new Schema({
     user_id: {
         type: String,
         required: true,
@@ -17,5 +17,5 @@ const usersSchema = new Schema({
         default: Date.now()
     },
 })
-const access_token = mongoose.model('access_token', usersSchema)
+const access_token = mongoose.model('access_token', tokenSchema)
 module.exports = access_token 

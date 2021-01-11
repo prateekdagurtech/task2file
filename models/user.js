@@ -28,6 +28,11 @@ const usersSchema = new Schema({
         required: true,
         bcrypt: true,
     },
+    address: [{
+        type: Schema.Types.ObjectId,
+        ref: 'address'
+    }]
 })
-const Usersdata = mongoose.model('users', usersSchema);
-module.exports = Usersdata
+
+const users = mongoose.model('users', usersSchema);
+module.exports = users

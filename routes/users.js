@@ -1,6 +1,9 @@
-//const passport = require('passport')
 const jwt = require('jsonwebtoken')
 const express = require('express')
+const passport = require('passport');
+const authenticate = require('../middleware/passport')
+const localStrategy = require('passport-local').Strategy;
+
 const UsersModel = require('../models/user')
 const UsersAccessToken = require('../models/access_token')
 const UsersAddress = require('../models/address')
@@ -9,20 +12,46 @@ const Secret_Token = process.env.SECRET_TOKEN
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const router = express.Router()
-router.post('/register', async (req, res) => {
-    try {
-        const salt = bcrypt.genSaltSync(saltRounds);
-        const hash = bcrypt.hashSync(req.body.hash, salt);
-        req.body.hash = hash
-        req.body.salt = salt
-        const user = new UsersModel(req.body);
-        let data = await user.save();
-        res.send(data);
-    }
-    catch (err) {
-        res.status(500).send(err);
-    }
-});
+// router.post('/signup', async (req, res) => {
+//     try {
+//         const salt = bcrypt.genSaltSync(saltRounds);
+//         const hash = bcrypt.hashSync(req.body.hash, salt);
+//         req.body.hash = hash
+//         req.body.salt = salt
+//         const user = new UsersModel(req.body);
+//         let data = await user.save();
+//         res.send(data)
+//     }
+//     catch (err) {
+//         res.status(500).send(err);
+
+//     }
+// })
+
+// router.post('/signup', function (req, res, next) {
+//     var username = req.body.username;
+//     var password = req.body.password;
+
+//     UsersModel.findOne({ username: username }, function (err, user) {
+
+//         if (err) { return next(err); }
+//         if (user) {
+//             req.flash('error', 'User already exists');
+//             return res.redirect('/signup');
+//         }
+
+//         var newUser = new User({
+//             username: username,
+//             password: password
+//         });
+//         newUser.save(next);
+
+//         passport.authenticate('local', { failureRedirect: '/signup' }),
+//             function (req, res) {
+//                 res.redirect('/');
+//             }
+//     });
+
 
 router.post('/address', async (req, res) => {
     try {
@@ -41,10 +70,27 @@ router.post('/address', async (req, res) => {
         res.status(500).send(err);
     }
 });
-// router.post('/login', passport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' }), async (req, res) => {
+router.post('/login', passport.authenticate('localStrategy', { successRedirect: '/', failureRedirect: '/login' }), async (req, res, next) => {
+    try {
+        console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+        const user = await findByCredentials(req.body.username, req.body.hash)
+        var token = jwt.sign({ id: user._id }, 'Secret_Token', { expiresIn: '1h' });
+        const users = new UsersAccessToken({
+            user_id: user._id,
+            access_token: token,
+        });
+        console.log(users)
+        let data = await users.save();
+        res.send(data)
+    } catch (e) {
+        res.status(400).send(e.message)
+    }
+})
+
+// router.post('/login', async (req, res) => {
 //     try {
 //         const user = await findByCredentials(req.body.username, req.body.hash)
-//         var token = jwt.sign({ id: user._id }, 'thisisprateek', { expiresIn: '1h' });
+//         var token = jwt.sign({ id: user._id }, Secret_Token, { expiresIn: '1h' });
 //         const users = new UsersAccessToken({
 //             user_id: user._id,
 //             access_token: token,
@@ -54,21 +100,7 @@ router.post('/address', async (req, res) => {
 //     } catch (e) {
 //         res.status(400).send(e.message)
 //     }
-// })
-router.post('/login', async (req, res) => {
-    try {
-        const user = await findByCredentials(req.body.username, req.body.hash)
-        var token = jwt.sign({ id: user._id }, Secret_Token, { expiresIn: '1h' });
-        const users = new UsersAccessToken({
-            user_id: user._id,
-            access_token: token,
-        });
-        let data = await users.save();
-        res.send(data)
-    } catch (e) {
-        res.status(400).send(e.message)
-    }
-});
+// });
 findByCredentials = async (username, hash) => {
     const user = await UsersModel.findOne({ username })
 

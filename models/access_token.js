@@ -9,11 +9,7 @@ const tokenSchema = new Schema({
         type: String,
         required: true,
     },
-    // expiry_in: {
-    //     type: Date,
-    //     expires: '3600s',
-    //     default: Date.now()
-    // },
+
 })
 const access_token = mongoose.model('access_token', tokenSchema)
 module.exports = access_token 

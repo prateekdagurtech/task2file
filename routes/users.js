@@ -21,51 +21,23 @@ router.post('/regigter', async (req, res) => {
 
     }
 })
-router.post('/address', async (req, res) => {
+router.post('/address', userAuthentication.auth, async (req, res) => {
     try {
-        const user = await UsersAccessToken.findOne(req.user_id)
-        req.body.user_id = user.user_id
-        const users = new UsersAddress(req.body)
+        const user_id = req.user.user_id
+        const users = new UsersAddress.findOne({ user_id: user_id })
         let data = await users.save()
-        let updateUser = await UsersModel.updateOne({ _id: req.body.user_id }, {
-            $push: {
-                address: data._id
-            }
-        })
+        let updateUser = await UsersModel.updateOne({ _id: req.body.user_id },
+            {
+                $push: {
+                    address: data._id
+                }
+            })
         res.send(data);
     }
     catch (err) {
         res.status(500).send(err);
     }
 });
-
-
-// router.post('/login', async (req, res) => {
-//     try {
-//         const user = await findByCredentials(req.body.username, req.body.hash)
-//         var token = jwt.sign({ id: user._id }, Secret_Token, { expiresIn: '1h' });
-//         const users = new UsersAccessToken({
-//             user_id: user._id,
-//             access_token: token,
-//         });
-//         let data = await users.save();
-//         res.send(data)
-//     } catch (e) {
-//         res.status(400).send(e.message)
-//     }
-// });
-// findByCredentials = async (username, hash) => {
-//     const user = await UsersModel.findOne({ username })
-
-//     if (!user) {
-//         throw new Error("No such username")
-//     }
-//     isMatch = await bcrypt.compare(hash, user.hash)
-//     if (!isMatch) {
-//         throw new Error("No any matches of password")
-//     }
-//     return user
-// }
 router.get('/get/:_id', async (req, res) => {
     try {
         const user_id = req.params._id
@@ -79,7 +51,6 @@ router.get('/get/:_id', async (req, res) => {
         res.status(401).send(e.message)
     }
 });
-
 router.put('/delete', userAuthentication.auth, async (req, res) => {
     try {
         const user_id = req.user.user_id
@@ -99,6 +70,5 @@ router.get('/get', async function (req, res) {
     users = await UsersModel.find().limit(pagination.limit).skip(pagination.skip)
     res.send(users)
 });
-
 
 module.exports = router

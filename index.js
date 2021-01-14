@@ -2,6 +2,10 @@ require("dotenv").config()
 const Secret_Token = process.env.SECRET_TOKEN
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt');
+var request = require('request');
+const cheerio = require('cheerio');
+const fs = require('fs')
+const rp = require('request-promise')
 
 const express = require('express')
 const mongoose = require('mongoose')
@@ -21,8 +25,6 @@ app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveU
 const UsersModel = require('./models/user')
 const Strategy = require('passport-local').Strategy;
 
-
-// Initialize Passport and restore authentication state, if any, from the session.
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -77,17 +79,6 @@ findByCredentials = async (username, hash) => {
 
 
 app.get('/success', async function (req, res) {
-    // console.log
-    // const filter = { username: 'username' };
-    // const update = { access_token: 'access_token' };
-
-    // let doc = await UsersAccessToken.findOneAndUpdate(filter, update, {
-    //     new: true,
-    //     upsert: true
-    // });
-    // const data = await doc.save();
-    // res.send(data)
-
     res.json({
 
         status: true,
@@ -101,10 +92,88 @@ app.get('/unsuccess', function (req, res) {
     })
 });
 
-app.get('/login', function (req, res) {
-    console.log('9999999999999999999999999999999999');
-    res.send('login');
-});
+app.get('/fetch/flipkart/mobile', async function (req, res) {
 
-app.listen(port, () => console.log(`Express server currently running on port ${port}`));
+    url = 'https://www.flipkart.com/search?p%5B%5D=facets.brand%255B%255D%3DSamsung&sid=tyy%2F4io&sort=recency_desc&wid=1.productCard.PMU_V2_1'
+    // rp(url, function (error, response, html) {
+    //     if (!error && response.statusCode == 200) {
+    //         var $ = cheerio.load(html);
+    //         console.log($)
+    //         var ps = [];
+    //         $("_2pi5LC").each(function (i, elem) {
+    //             console.log(elem)
+    //             //   process.exit(0)
+    //             var club_url = $(this).children().first().children().attr("href");
+    //             club_url = url.substring(0, 25) + club_url;
+    //             console.log(club_url);
+    //             var club_options = {
+    //                 uri: club_url,
+    //                 transform: function (body) {
+    //                     return cheerio.load(body);
+    //                 }
+    //             };
+    //             ps.push(rp(club_options));
+    //         })
+    //         fs.writeFile('output.json', JSON.stringify(url, null, 4), function (err) {
+    //             console.log('File successfully written! - Check your project directory for the output.json file');
+    //         });
+    //         res.send('Scraping is done, check the output.json file!');
+    //     }
+    // })
 
+    rp(url)
+        .then(function (html) {
+            const $ = cheerio.load(html);
+            const wikiName = [];
+            $('._2pi5LC').each(function (i, elem) {
+                console.log(elem)
+                wikiName.push({
+                    name: $(this).find($('.iUmrbN')).text(),
+                    price: ($(this).find($('.M_qL-C')).text() || $(this).find($('._3o3r66')).text()),
+                    specs: $(this).find($('.BXlZdc')).text()
+                });
+            })
+            res.send(wikiName);
+        })
+        .catch(function (err) {
+            res.status(301).send(err);
+        })
+
+})
+
+
+// request('http://www.google.com', function (error, response, body) {
+//     console.error('error:', error);
+//     console.log('statusCode:', response && response.statusCode);
+//     console.log('body:', body);
+//     res.send(body)
+
+
+
+app.listen(port, () => console.log(`Express server currently running on port ${port}`))
+
+
+
+let fetchMobiles = async (req, res, next) => {
+    const url = req.body.url;
+    rp(url)
+        .then(function (html) {
+            const $ = cheerio.load(html);
+            const wikiName = [];
+            $('._2kSfQ4').each(function (i, elem) {
+                wikiName.push({
+                    name: $(this).find($('.iUmrbN')).text(),
+                    price: ($(this).find($('.M_qL-C')).text() || $(this).find($('._3o3r66')).text()),
+                    specs: $(this).find($('.BXlZdc')).text()
+                });
+            })
+            res.send(wikiName);
+        })
+        .catch(function (err) {
+            res.status(301).send(err);
+        })
+};
+
+module.exports = {
+    fetchMobiles
+};

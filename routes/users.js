@@ -1,12 +1,16 @@
 const express = require('express')
+const cheerio = require('cheerio');
+const passport = require('passport')
+const rp = require('request-promise')
 const UsersModel = require('../models/user')
-const UsersAccessToken = require('../models/access_token')
 const UsersAddress = require('../models/address')
 const userAuthentication = require('../middleware/auth')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const router = express.Router()
-router.post('/regigter', async (req, res) => {
+const url = process.env.URL
+
+router.post('/register', async (req, res) => {
     try {
         const salt = bcrypt.genSaltSync(saltRounds);
         const hash = bcrypt.hashSync(req.body.hash, salt);
@@ -54,7 +58,7 @@ router.get('/get/:_id', async (req, res) => {
 router.put('/delete', userAuthentication.auth, async (req, res) => {
     try {
         const user_id = req.user.user_id
-        const deleteUser = await UsersModel.findOneAndDelete({ "_id": user_id })
+        const deleteUser = await UsersModel.findOneAndRemove({ "_id": user_id })
         res.json({ message: 'user deleted' })
     } catch (e) {
         res.status(401).send(e.message)
@@ -70,5 +74,51 @@ router.get('/get', async function (req, res) {
     users = await UsersModel.find().limit(pagination.limit).skip(pagination.skip)
     res.send(users)
 });
+router.post('/login', passport.authenticate('local', { failureRedirect: 'unsuccess', }), function (req, res, next) {
+    res.redirect('success');
+})
+findByCredentials = async (username, hash) => {
+    const user = await UsersModel.findOne({ username })
+
+    if (!user) {
+        throw new Error("No such username")
+    }
+    isMatch = await bcrypt.compare(hash, user.hash)
+    if (!isMatch) {
+        throw new Error("No any matches of password")
+    }
+    return user
+}
+router.get('/success', async function (req, res) {
+    res.json({
+        status: true,
+        message: "You are successfully login check token on console"
+    })
+});
+router.get('/unsuccess', function (req, res) {
+    res.json({
+        status: false,
+        message: "unable to login, try again... check username or password"
+    })
+});
+router.get('/fetch/flipkart/mobile', async function (req, res) {
+    rp(url)
+        .then(function (html) {
+            const $ = cheerio.load(html);
+            const mobileDetails = [];
+            $('._2kHMtA ').each(function (i, elem) {
+                mobileDetails.push({
+                    name: $(this).find($('._4rR01T')).text(),
+                    price: $(this).find($('._30jeq3')).text(),
+                    specs: $(this).find($('._1xgFaf')).text()
+                });
+            })
+            res.send(mobileDetails);
+        })
+        .catch(function (err) {
+            res.status(301).send(err);
+        })
+
+})
 
 module.exports = router

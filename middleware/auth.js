@@ -8,7 +8,6 @@ module.exports.auth = async (req, res, next) => {
         const user = await accessToken.findOne({ "user_id": decoded.id, "access_token": token })
         req.user = user
         next()
-
     } catch (e) {
         res.status(401).send(e.message)
     }

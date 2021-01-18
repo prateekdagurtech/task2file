@@ -114,6 +114,7 @@ router.get('/fetch/flipkart/mobile', async function (req, res) {
                 });
             })
             res.send(mobileDetails);
+            console.log(mobileDetails)
         })
         .catch(function (err) {
             res.status(301).send(err);
@@ -121,4 +122,64 @@ router.get('/fetch/flipkart/mobile', async function (req, res) {
 
 })
 
+router.get('/fetch/flipkart/mobmodel', async function (req, res) {
+
+    rp(url).then(function (html) {
+        const $ = cheerio.load(html);
+        const headTags = [];
+        $('head > *').each(function (i, elm) {
+            headTags.push({ name: elm.name, attribs: elm.attribs, text: $(elm).text() });
+        });
+        console.log(headTags);
+
+    })
+    res.send(mobileDetails);
+    console.log(mobileDetails)
+}).catch(function (err) {
+    res.status(301).send(err);
+})
+
+})
+
+
+
+
+
+//     $('._1YokD2').each(function (urlText, elem) {
+//         mobileDetails.push({
+//             name: $(this).find($('.B_NuCI')).text(),
+//             price: $(this).find($('._30jeq3')).text(),
+//             specs: $(this).find($('._3a9CI2')).text(),
+//             href: $(this).find
+//         });
+//     })
+//     res.send(mobileDetails);
+//     console.log(mobileDetails)
+
+// })
+// //.catch(function (err) {
+// //   res.status(301).send(err);
+// //})
+
+
+//     const mobileDetails = [];
+//     $('._1YokD2').each(function (urlText, elem) {
+//         mobileDetails.push({
+//             name: $(this).find($('.B_NuCI')).text(),
+//             price: $(this).find($('._30jeq3')).text(),
+//             specs: $(this).find($('._3a9CI2')).text(),
+//             href: $(this).find
+//         });
+//     })
+//     res.send(mobileDetails);
+//     console.log(mobileDetails)
+
+// })
+// //.catch(function (err) {
+// //   res.status(301).send(err);
+// //})
+
+
 module.exports = router
+
+

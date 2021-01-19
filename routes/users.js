@@ -1,7 +1,7 @@
 const express = require('express')
 const cheerio = require('cheerio');
 const passport = require('passport')
-const rp = require('request-promise')
+const requestPromise = require('request-promise')
 const UsersModel = require('../models/user')
 const UsersAddress = require('../models/address')
 const userAuthentication = require('../middleware/auth')
@@ -102,7 +102,7 @@ router.get('/unsuccess', function (req, res) {
     })
 });
 router.get('/fetch/flipkart/mobile', async function (req, res) {
-    rp(url)
+    requestPromise(url)
         .then(function (html) {
             const $ = cheerio.load(html);
             const mobileDetails = [];
@@ -114,7 +114,6 @@ router.get('/fetch/flipkart/mobile', async function (req, res) {
                 });
             })
             res.send(mobileDetails);
-            console.log(mobileDetails)
         })
         .catch(function (err) {
             res.status(301).send(err);
@@ -123,62 +122,33 @@ router.get('/fetch/flipkart/mobile', async function (req, res) {
 })
 
 router.get('/fetch/flipkart/mobmodel', async function (req, res) {
+    requestPromise(url)
+        .then(function (html) {
+            const $ = cheerio.load(html);
+            const headTags = [];
 
-    rp(url).then(function (html) {
-        const $ = cheerio.load(html);
-        const headTags = [];
-        $('head > *').each(function (i, elm) {
-            headTags.push({ name: elm.name, attribs: elm.attribs, text: $(elm).text() });
-        });
-        console.log(headTags);
+            $('a._1fQZEK').each(function (i, elem) {
+                headTags.push({
+                    link: $(this).attr('href')
+                })
+            })
+            for (headTag in headTags) {
+                let xyz = 'https://www.flipkart.com' + headTags[headTag].link
+                console.log
+                requestPromise(xyz)
+                    .then(function (html) {
+                        const $ = cheerio.load(html);
+                        const mobileDetails = []
+                        mobileDetails.push({
+                            name: $('.B_NuCI').text(),
+                            price: $('._16Jk6d').text(),
+                            actual_price: $('._2p6lqe').text()
 
-    })
-    res.send(mobileDetails);
-    console.log(mobileDetails)
-}).catch(function (err) {
-    res.status(301).send(err);
+                        })
+                    })
+            }
+        })
 })
-
-})
-
-
-
-
-
-//     $('._1YokD2').each(function (urlText, elem) {
-//         mobileDetails.push({
-//             name: $(this).find($('.B_NuCI')).text(),
-//             price: $(this).find($('._30jeq3')).text(),
-//             specs: $(this).find($('._3a9CI2')).text(),
-//             href: $(this).find
-//         });
-//     })
-//     res.send(mobileDetails);
-//     console.log(mobileDetails)
-
-// })
-// //.catch(function (err) {
-// //   res.status(301).send(err);
-// //})
-
-
-//     const mobileDetails = [];
-//     $('._1YokD2').each(function (urlText, elem) {
-//         mobileDetails.push({
-//             name: $(this).find($('.B_NuCI')).text(),
-//             price: $(this).find($('._30jeq3')).text(),
-//             specs: $(this).find($('._3a9CI2')).text(),
-//             href: $(this).find
-//         });
-//     })
-//     res.send(mobileDetails);
-//     console.log(mobileDetails)
-
-// })
-// //.catch(function (err) {
-// //   res.status(301).send(err);
-// //})
-
 
 module.exports = router
 
